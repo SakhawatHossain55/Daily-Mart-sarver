@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const MongoClient = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID; 
 const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config()
@@ -26,14 +27,33 @@ client.connect(err => {
             res.send(items)
         })
   })
+  app.get('/product/:id', (req, res) => {
+    const id = ObjectID(req.params.id)
+    // console.log('product', id);
+    productsCollection.find({_id: id})
+        .toArray((err, items) => {
+            res.send(items)
+        })
+  })
 
   app.post('/addProduct', (req, res) => {
       const newProduct = req.body;
       productsCollection.insertOne(newProduct)
       .then(result => {
-          console.log("inserted count", result.insertedCount);
+          // console.log("inserted count", result.insertedCount);
           res.send(result.insertedCount > 0)
       })
+  })
+
+  app.delete('/delete/:id', (req, res) => {
+    
+    const id = ObjectID(req.params.id);
+    // console.log('delte this', id)
+    productsCollection.findOneAndDelete({_id: id})
+    .then((result) => {
+        res.send(!!result.value)
+    })
+
   })
 
 });
@@ -41,3 +61,12 @@ client.connect(err => {
 
 app.listen(port)
 
+
+
+
+
+
+// productsCollection.deleteOne({_id: ObjectId(req.params.id)})
+//       .then((result) => {
+//           res.send(result.deletedCount > 0)
+//       })
